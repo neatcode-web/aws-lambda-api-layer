@@ -1,0 +1,68 @@
+service: async-extension-example
+configValidationMode: error
+
+provider:
+  name: aws
+  versionFunctions: false
+  runtime: nodejs16.x
+  logRetentionInDays: 3
+  environment:
+    STAGE: ${opt:stage, 'dev'}
+  httpApi:
+    payload: '2.0'
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - lambda:InvokeFunction
+          Resource: '*'
+
+layers:
+  asyncExtension:
+    path: src/asyncExtension
+    name: async-extension-${opt:stage, 'dev'}
+    description: Layer that executes a handler in an async fashion.
+    compatibleRuntimes:
+      - nodejs16.x
+    compatibleArchitectures:
+      - x86_64
+      - arm64
+
+functions:
+  longRunning:
+    handler: /opt/proxy.handler
+    timeout: 100
+    environment:
+      ASYNC_HANDLER: src/api/async/longRunning
+    layers:
+      - !Ref AsyncExtensionLambdaLayer
+    events:
+      - httpApi:
+          path: /async/long
+          method: GET
+
+  customResponse:
+    handler: /opt/proxy.handler
+    timeout: 8
+    environment:
+      ASYNC_HANDLER: src/api/async/customResponse
+      CUSTOM_RES: '{"message": "Hello from custom response"}'
+    layers:
+      - !Ref AsyncExtensionLambdaLayer
+    events:
+      - httpApi:
+          path: /async/custom/res
+          method: GET
+
+  customHandler:
+    handler: src/api/customHandler.handler
+    timeout: 8
+    environment:
+      ASYNC_HANDLER: src/api/async/customHandler
+    layers:
+      - !Ref AsyncExtensionLambdaLayer
+    events:
+      - httpApi:
+          path: /async/custom/handler
+          method: GET

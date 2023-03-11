@@ -1,0 +1,14 @@
+{
+  "name": "aws-lambda-api-layer",
+  "version": "1.0.0",
+  "description": "API endpoint to proxy requests to ingest",
+  "main": "index.js",
+  "author": "neatcode-web",
+  "license": "MIT",
+  "scripts": {
+    "deploy": "sls deploy"
+  },
+  "devDependencies": {
+    "serverless": "^3.22.0"
+  }
+}
